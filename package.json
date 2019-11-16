@@ -1,35 +1,58 @@
 {
-  "name": "homebridge-mqtt-dimmer",
-  "version": "0.0.1",
-  "description": "Homebridge plugin to control a dimmer via mqtt",
-  "note": "peerDependencies is hardcoded to peerDepdendencies in homebridge!!!",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "echo \"Error: configure and run homebridge to start\" && exit 1"
+  "_from": "homebridge-dimmer-accessory@latest",
+  "_id": "homebridge-dimmer-accessory@1.0.1",
+  "_inBundle": false,
+  "_integrity": "sha512-ifVOiwfEQXC96YaYUZow5TjIZt5edQyBqxxwIbZvaYuOewrxYftMoVutANnHlmyGaw9WUVCGQLxecXNg8hdpHA==",
+  "_location": "/homebridge-dimmer-accessory",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "homebridge-dimmer-accessory@latest",
+    "name": "homebridge-dimmer-accessory",
+    "escapedName": "homebridge-dimmer-accessory",
+    "rawSpec": "latest",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
-  "engines": {
-    "node": ">4.0.0",
-    "homebridge": ">=0.2.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/goodfield/homebridge-mqtt-dimmer"
-  },
-  "keywords": [
-    "homebridge-plugin",
-    "MQTT",
-    "Dimmer"
+  "_requiredBy": [
+    "#USER"
   ],
+  "_resolved": "https://registry.npmjs.org/homebridge-dimmer-accessory/-/homebridge-dimmer-accessory-1.0.1.tgz",
+  "_shasum": "0695705f91d3235cb0cb768318f22033b2e7be8c",
+  "_spec": "homebridge-dimmer-accessory@latest",
+  "_where": "/usr/lib",
+  "author": {
+    "name": "Gaurav Patel",
+    "email": "patelgaurav4u@gmail.com"
+  },
+  "bundleDependencies": false,
   "dependencies": {
     "mqtt": "^1.6.3"
   },
-  "author": {
-    "name": "David Uebelacker"
+  "deprecated": false,
+  "description": "MQTT Light accessory plugin for HomeBridge with Brightness and On/Off Status",
+  "devDependencies": {},
+  "engines": {
+    "homebridge": ">=0.2.0",
+    "node": ">4.0.0"
   },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "keywords": [
+    "mqtt",
+    "homebridge-plugin",
+    "dimmer",
+    "lightBulb",
+    "homebridge"
+  ],
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/goodfield/homebridge-mqtt-dimmer/issues"
+  "main": "index.js",
+  "name": "homebridge-dimmer-accessory",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://github.com/goodfield/homebridge-mqtt-dimmer"
+  "version": "1.0.1"
 }
