@@ -1,6 +1,7 @@
 MIT License
 
 Copyright (c) 2018 Gaurav Patel
+
 Copyright (c) 2016 David Übelacker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
