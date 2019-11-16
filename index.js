@@ -65,7 +65,7 @@ function mqttdimmerAccessory(log, config) {
 
   this.on = true;
   this.brightness = 50;
-  this.hue = 100;
+  this.hue = 0;
   this.saturation = 100;
   this.temperature = 150;
 
@@ -138,7 +138,7 @@ mqttdimmerAccessory.prototype.getColorTemperature = function(callback) {
 };
 
 mqttdimmerAccessory.prototype.setOn = function(status, callback, context) {
-  if (this.on != status) {
+  if (this.on != status && context !== 'fromSetValue') {
     this.on = status;
 
     var protocol = status ? this.topics.switchOn : this.topics.switchOff;
@@ -148,7 +148,7 @@ mqttdimmerAccessory.prototype.setOn = function(status, callback, context) {
 };
 
 mqttdimmerAccessory.prototype.setBrightness = function(brightness, callback, context) {
-  if (this.brightness != brightness) {
+  if (this.brightness != brightness && context !== 'fromSetValue') {
     this.brightness = brightness;
 
     var value = this.brightness * 255 / 100;
@@ -160,7 +160,7 @@ mqttdimmerAccessory.prototype.setBrightness = function(brightness, callback, con
 };
 
 mqttdimmerAccessory.prototype.setSaturation = function(saturation, callback, context) {
-  if (this.saturation != saturation) {
+  if (this.saturation != saturation && context !== 'fromSetValue') {
     this.saturation = saturation;
 
     var value = hsv2rgb(this.hue / 360, this.saturation / 100, this.brightness / 100);
@@ -174,7 +174,7 @@ mqttdimmerAccessory.prototype.setSaturation = function(saturation, callback, con
 };
 
 mqttdimmerAccessory.prototype.setHue = function(hue, callback, context) {
-  if (this.hue != hue) {
+  if (this.hue != hue && context !== 'fromSetValue') {
     this.hue = hue;
 
     var value = hsv2rgb(this.hue / 360, this.saturation / 100, this.brightness / 100);
@@ -188,7 +188,7 @@ mqttdimmerAccessory.prototype.setHue = function(hue, callback, context) {
 };
 
 mqttdimmerAccessory.prototype.setColorTemperature = function(temperature, callback, context) {
-  if (this.temperature != temperature) {
+  if (this.temperature != temperature && context !== 'fromSetValue') {
     this.temperature = temperature;
 
     var value = 255 - Math.min(Math.max((1000000 / temperature - 2200) / (6600 - 2200) * 255, 0), 255);
