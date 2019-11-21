@@ -2,14 +2,15 @@
 'use strict';
 
 var Service, Characteristic;
-var mqtt = require("mqtt");
+var mqtt = require('mqtt');
 
 function mqttdimmerAccessory(log, config) {
   this.log        = log;
-  this.name       = config["name"];
-  this.url        = config["url"];
+  this.name       = config['name'];
+  this.url        = config['url'];
   this.sn         = config['sn'] || 'Unknown';
   this.model      = config['model'] || 'Dimmer';
+  this.topics     = config['topics'];
   this.client_Id  = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
   this.options = {
     keepalive: 10,
@@ -25,13 +26,10 @@ function mqttdimmerAccessory(log, config) {
       qos: 0,
       retain: false
     },
-    username: config["username"],
-    password: config["password"],
+    username: config['username'],
+    password: config['password'],
     rejectUnauthorized: false
   };
-
-  this.caption = config["caption"];
-  this.topics = config["topics"];
 
   this.service = new Service.Lightbulb(this.name);
 
@@ -55,22 +53,25 @@ function mqttdimmerAccessory(log, config) {
     .on('get', this.getColorTemperature.bind(this))
     .on('set', this.setColorTemperature.bind(this))
     .setProps({
-      minValue: 150,
-      maxValue: 450
+      minValue: 140,
+      maxValue: 490
     });
+
+  this.on = true;
+  this.brightness = 100;
+  this.hue = 0;
+  this.saturation = 0;
+  this.temperature = 140;
+
+  var platform = this;
 
   // connect to MQTT broker
   this.client = mqtt.connect(this.url, this.options);
-  var self = this;
-
-  this.on = true;
-  this.brightness = 50;
-  this.hue = 0;
-  this.saturation = 100;
-  this.temperature = 150;
-
   this.client.on('error', function(err) {
-    that.log('Error event on MQTT:', err);
+    platform.log('Error event on MQTT:', err);
+  });
+  this.client.on('message', function(topic, message) {
+    platform.log("Received MQTT: " + topic + " = " + message);
   });
 }
 
@@ -78,7 +79,7 @@ module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
 
-  homebridge.registerAccessory("homebridge-dimmer-accessory", "dimmer-accessory-brightness", mqttdimmerAccessory);
+  homebridge.registerAccessory('homebridge-dimmer-accessory', 'dimmer-accessory-brightness', mqttdimmerAccessory);
 }
 
 function hsv2rgb(h, s, v) {
@@ -100,11 +101,11 @@ function hsv2rgb(h, s, v) {
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
-mqttdimmerAccessory.prototype.encodeChecksum = function(stringComma) {
+mqttdimmerAccessory.prototype.encodeProtocol = function(stringComma) {
   var byteArray = stringComma.split(',');
   var checksum = 1;
 
-  stringComma = "";
+  stringComma = '';
   for (var i = 0; i < byteArray.length; ++i) {
     var value = parseInt(byteArray[i], 10);
     stringComma += value + ',';
@@ -113,7 +114,7 @@ mqttdimmerAccessory.prototype.encodeChecksum = function(stringComma) {
   checksum = 256 - (checksum % 256);
   stringComma += checksum;
 
-  this.log("EncodeChecksum : [%s]", stringComma);
+  this.log('EncodeProtocol : [%s]', stringComma);
   return stringComma;
 };
 
@@ -138,29 +139,29 @@ mqttdimmerAccessory.prototype.getColorTemperature = function(callback) {
 };
 
 mqttdimmerAccessory.prototype.setOn = function(status, callback, context) {
-  if (this.on != status && context !== 'fromSetValue') {
+  if (this.on != status) {
     this.on = status;
 
     var protocol = status ? this.topics.switchOn : this.topics.switchOff;
-    this.client.publish(this.topics.send, this.encodeChecksum(protocol));
+    this.client.publish(this.topics.send, this.encodeProtocol(protocol));
   }
   callback();
 };
 
 mqttdimmerAccessory.prototype.setBrightness = function(brightness, callback, context) {
-  if (this.brightness != brightness && context !== 'fromSetValue') {
+  if (this.brightness != brightness) {
     this.brightness = brightness;
 
     var value = this.brightness * 255 / 100;
     var protocol = this.topics.brightness;
     protocol = protocol.replace('X', value.toString());
-    this.client.publish(this.topics.send, this.encodeChecksum(protocol));
+    this.client.publish(this.topics.send, this.encodeProtocol(protocol));
   }
   callback();
 };
 
 mqttdimmerAccessory.prototype.setSaturation = function(saturation, callback, context) {
-  if (this.saturation != saturation && context !== 'fromSetValue') {
+  if (this.saturation != saturation) {
     this.saturation = saturation;
 
     var value = hsv2rgb(this.hue / 360, this.saturation / 100, this.brightness / 100);
@@ -168,13 +169,13 @@ mqttdimmerAccessory.prototype.setSaturation = function(saturation, callback, con
     protocol = protocol.replace('R', value[0]);
     protocol = protocol.replace('G', value[1]);
     protocol = protocol.replace('B', value[2]);
-    this.client.publish(this.topics.send, this.encodeChecksum(protocol));
+    this.client.publish(this.topics.send, this.encodeProtocol(protocol));
   }
   callback();
 };
 
 mqttdimmerAccessory.prototype.setHue = function(hue, callback, context) {
-  if (this.hue != hue && context !== 'fromSetValue') {
+  if (this.hue != hue) {
     this.hue = hue;
 
     var value = hsv2rgb(this.hue / 360, this.saturation / 100, this.brightness / 100);
@@ -182,19 +183,19 @@ mqttdimmerAccessory.prototype.setHue = function(hue, callback, context) {
     protocol = protocol.replace('R', value[0]);
     protocol = protocol.replace('G', value[1]);
     protocol = protocol.replace('B', value[2]);
-    this.client.publish(this.topics.send, this.encodeChecksum(protocol));
+    this.client.publish(this.topics.send, this.encodeProtocol(protocol));
   }
   callback();
 };
 
 mqttdimmerAccessory.prototype.setColorTemperature = function(temperature, callback, context) {
-  if (this.temperature != temperature && context !== 'fromSetValue') {
+  if (this.temperature != temperature) {
     this.temperature = temperature;
 
-    var value = 255 - Math.min(Math.max((1000000 / temperature - 2200) / (6600 - 2200) * 255, 0), 255);
+    var value = 255 - Math.min(Math.max((1000000 / temperature - 2040) / (7100 - 2040) * 255, 0), 255);
     var protocol = this.topics.temperature;
     protocol = protocol.replace('X', value.toString());
-    this.client.publish(this.topics.send, this.encodeChecksum(protocol));
+    this.client.publish(this.topics.send, this.encodeProtocol(protocol));
   }
   callback();
 };
@@ -203,7 +204,7 @@ mqttdimmerAccessory.prototype.getServices = function() {
   var informationService = new Service.AccessoryInformation();
 
   informationService.setCharacteristic(Characteristic.Name, this.name)
-                    .setCharacteristic(Characteristic.Manufacturer, "iLink")
+                    .setCharacteristic(Characteristic.Manufacturer, 'iLink')
                     .setCharacteristic(Characteristic.Model, this.model)
                     .setCharacteristic(Characteristic.SerialNumber, this.sn);
 
